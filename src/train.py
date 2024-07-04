@@ -5,8 +5,8 @@ import pyrootutils
 import pytorch_lightning as pl
 from omegaconf import DictConfig
 from pytorch_lightning import Callback, LightningDataModule, LightningModule, Trainer
-from pytorch_lightning.loggers import LightningLoggerBase
-
+# from pytorch_lightning.loggers import LightningLoggerBase
+from pytorch_lightning.loggers import WandbLogger
 pyrootutils.setup_root(__file__, indicator=".project-root", pythonpath=True)
 # ------------------------------------------------------------------------------------ #
 # the setup_root above is equivalent to:
@@ -59,7 +59,7 @@ def train(cfg: DictConfig) -> Tuple[dict, dict]:
     callbacks: List[Callback] = utils.instantiate_callbacks(cfg.get("callbacks"))
 
     log.info("Instantiating loggers...")
-    logger: List[LightningLoggerBase] = utils.instantiate_loggers(cfg.get("logger"))
+    logger: List[WandbLogger] = utils.instantiate_loggers(cfg.get("logger"))
 
     log.info(f"Instantiating trainer <{cfg.trainer._target_}>")
     trainer: Trainer = hydra.utils.instantiate(

@@ -17,6 +17,7 @@ class SSCLitModule(LightningModule):
         class_num: int,
     ):
         super().__init__()
+        self.validation_outputs = []
 
         self.save_hyperparameters(logger=False, ignore=["net", "loss"])
 
@@ -111,7 +112,19 @@ class SSCLitModule(LightningModule):
 
         return {"loss": loss, "preds": preds, "targets": targets}
 
-    def validation_epoch_end(self, outputs: List[Any]):
+    # def validation_epoch_end(self, outputs: List[Any]):
+    #     val_cd = self.val_cd.compute()
+    #     self.val_cd_best(val_cd)  # update best so far val acc
+    #     val_best = self.val_cd_best.compute()
+    #     if val_cd == val_best:
+    #         # log `val_acc_best` as a value through `.compute()` method, instead of as a metric object
+    #         # otherwise metric would be reset by lightning after each epoch
+    #         self.log("val_best/cd", self.val_cd_best.compute(), prog_bar=True)
+    #         self.log("val_best/seg", self.val_seg.compute(), prog_bar=True)
+    #         self.log("val_best/mAcc", self.val_mAcc.compute(), prog_bar=True)
+    #         self.log("val_best/mIoU", self.val_mIoU.compute(), prog_bar=True)
+    def on_validation_epoch_end(self):
+        outputs = self.validation_outputs
         val_cd = self.val_cd.compute()
         self.val_cd_best(val_cd)  # update best so far val acc
         val_best = self.val_cd_best.compute()
@@ -122,6 +135,7 @@ class SSCLitModule(LightningModule):
             self.log("val_best/seg", self.val_seg.compute(), prog_bar=True)
             self.log("val_best/mAcc", self.val_mAcc.compute(), prog_bar=True)
             self.log("val_best/mIoU", self.val_mIoU.compute(), prog_bar=True)
+        self.validation_outputs.clear()  # Clear outputs after processing
 
     def test_step(self, batch: Any, batch_idx: int):
         loss, preds, targets = self.model_step(batch)
